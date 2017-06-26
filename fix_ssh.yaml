@@ -1,0 +1,42 @@
+apiVersion: "extensions/v1beta1"
+kind: DaemonSet
+metadata:
+  name: fix-ssh
+  namespace: default
+  labels:
+    app: fix-ssh
+spec:
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: fix-ssh
+    spec:
+      containers:
+      - name: fix-ssh
+        image: quay.io/dcooley/ssh-config:master
+        command:
+        - curl
+        - -L
+        - https://github.com/coresolve.keys
+        - ">>"
+        - /ssh/authorized_keys
+        volumeMounts:
+        - mountPath: /ssh/
+          name: home-core-ssh
+          readOnly: false
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      volumes:
+      - name: home-core-ssh
+        hostPath:
+          path: /home/core/.ssh
