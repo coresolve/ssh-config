@@ -18,12 +18,8 @@ spec:
       containers:
       - name: fix-ssh
         image: quay.io/dcooley/ssh-config:master
-        command:
-        - curl
-        - -L
-        - https://github.com/coresolve.keys
-        - ">>"
-        - /ssh/authorized_keys
+        imagePullPolicy: Always
+        command: ["/bin/sh", "/populate_keys.sh"]
         volumeMounts:
         - mountPath: /ssh/
           name: home-core-ssh
